@@ -29,10 +29,10 @@ class QuectoCalc
   # @option [Hash{ String => Numeric }] consts
   #   List on constants and their values to put in the expression.
   #
-  def eval(expr, consts = {})
+  def evaluate(expr, consts = {})
     tokens = build_tokens(expr)
     ast = build_ast(tokens)
-    evaluate(ast, consts)
+    evaluate_ast(ast, consts)
   rescue QuectoError => e
     puts "#{e.error_name} #{e.message}"
   end
@@ -64,7 +64,7 @@ class QuectoCalc
   # @option [Hash{ String => Numeric }] consts
   #   List on constants and their values to put in the expression.
   #
-  def evaluate(ast, consts = {})
+  def evaluate_ast(ast, consts = {})
     evaluator = Evaluator.new(consts)
     evaluator.visit(ast)
   end
