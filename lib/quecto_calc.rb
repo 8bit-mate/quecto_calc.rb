@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "quecto_calc/evaluator"
+require_relative "quecto_calc/const_interface"
 require_relative "quecto_calc/lexer"
 require_relative "quecto_calc/parser"
 require_relative "quecto_calc/version"
@@ -20,6 +21,8 @@ require_relative "quecto_calc/version"
 # @ https://github.com/davidcallanan/py-myopl-code
 #
 class QuectoCalc
+  include ConstInterface
+
   #
   # Evaluate an expression.
   #
