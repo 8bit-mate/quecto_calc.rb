@@ -9,6 +9,7 @@ class QuectoError < ::StandardError
   def initialize(error_name, message)
     @error_name = error_name
     @message = message
+    super()
   end
 end
 

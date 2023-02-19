@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    quecto_calc (0.1.0)
+    quecto_calc (0.1.1)
 
 GEM
   remote: https://rubygems.org/
