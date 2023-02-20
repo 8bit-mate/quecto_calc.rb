@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
+require "quecto_parser"
+
 require_relative "quecto_calc/evaluator"
-require_relative "quecto_calc/const_interface"
-require_relative "quecto_calc/lexer"
-require_relative "quecto_calc/parser"
 require_relative "quecto_calc/version"
 
 #
@@ -21,47 +20,26 @@ require_relative "quecto_calc/version"
 # @ https://github.com/davidcallanan/py-myopl-code
 #
 class QuectoCalc
-  include ConstInterface
-
   #
   # Evaluate an expression.
   #
   # @param [String] expr
-  #   Expression to parse and evaluate.
+  #   Expression (in a text form) to parse and evaluate.
   #
   # @option [Hash{ String => Numeric }] consts
   #   List on constants and their values to put in the expression.
   #
   def evaluate(expr, consts = {})
-    tokens = build_tokens(expr)
-    ast = build_ast(tokens)
-    evaluate_ast(ast, consts)
-  rescue QuectoError => e
-    puts "#{e.error_name} #{e.message}"
-  end
+    parser = QuectoParser.new
 
-  #
-  # Get a list of tokens from the string.
-  #
-  # @param [String] expr
-  #
-  def build_tokens(expr)
-    Lexer.new(expr).build_tokens
-  end
-
-  #
-  # Build an abstract syntax tree from a list of tokens.
-  #
-  # @param [Array<Token>] tokens
-  #
-  def build_ast(tokens)
-    Parser.new(tokens).parse
+    ast = parser.parse_expr(expr)
+    evaluate_ast(ast, consts) if ast
   end
 
   #
   # Evaluate expression from the AST.
   #
-  # @param [NumberNode, BinOpNode] ast
+  # @param [QuectoParser::NumberNode, QuectoParser::BinOpNode] ast
   #   Expression (in a form of AST) to evaluate.
   #
   # @option [Hash{ String => Numeric }] consts
@@ -70,5 +48,7 @@ class QuectoCalc
   def evaluate_ast(ast, consts = {})
     evaluator = Evaluator.new(consts)
     evaluator.visit(ast)
+  rescue QuectoCalcError, NoMethodError => e
+    puts "[#{e.class}] #{e.message}"
   end
 end

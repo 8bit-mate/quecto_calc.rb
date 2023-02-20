@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "quecto_error"
-require_relative "token_types"
+require_relative "quecto_calc_error"
 
 #
 # Evaluates expression from the abstract syntax tree.
 #
 class Evaluator
-  include TokenTypes
-
   #
   # Initialize an evaluator instance.
   #
@@ -20,10 +17,27 @@ class Evaluator
   end
 
   #
-  # @param [BinOpNode, NumberNode] node
+  # @param [QuectoParser::BinOpNode, QuectoParser::NumberNode] node
   #
   def visit(node)
-    send("_visit_#{node.class}", node)
+    method_name = "_visit_#{node.class}"
+    send(method_name, node)
+  end
+
+  #
+  # @param [String] _method_name
+  #
+  # @param [Object] node
+  #
+  # @raise [NoMethodError]
+  #
+  def method_missing(_method_name, node)
+    error_msg = "unsupported node type: #{node.class}. Plase check parser's output for correct node types."
+    raise NoMethodError, error_msg
+  end
+
+  def respond_to_missing?(*)
+    true
   end
 
   private
@@ -31,7 +45,7 @@ class Evaluator
   #
   # Retrieve result of a binary operation node.
   #
-  # @param [BinOpNode] node
+  # @param [QuectoParser::BinOpNode] node
   #
   # @return [Numeric]
   #   Result of the binary operation.
@@ -41,9 +55,9 @@ class Evaluator
     right = visit(node.right_node)
 
     case node.operator.type
-    when TT_PLUS
+    when TokenTypes::TT_PLUS
       left + right
-    when TT_MINUS
+    when TokenTypes::TT_MINUS
       left - right
     end
   end
@@ -51,15 +65,15 @@ class Evaluator
   #
   # Retrieve value of a number node.
   #
-  # @param [NumberNode] node
+  # @param [QuectoParser::NumberNode] node
   #
   # @return [Numeric]
   #
   def _visit_NumberNode(node)
     case node.token.type
-    when TT_INT
+    when TokenTypes::TT_INT
       node.token.value
-    when TT_CONST
+    when TokenTypes::TT_CONST
       _init_constant(node)
     end
   end
@@ -67,12 +81,12 @@ class Evaluator
   #
   # Replace constant with an associated value.
   #
-  # @param [NumberNode] node
+  # @param [QuectoParser::NumberNode] node
   #   A numeric node with @token of TT_CONST type.
   #
   # @return [Numeric]
   #
-  # @raise [CalcError]
+  # @raise [CalcError::RunTimeError]
   #   Raises if constant is not found in the @consts.
   #
   def _init_constant(node)
